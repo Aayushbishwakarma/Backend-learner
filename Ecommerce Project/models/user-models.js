@@ -11,10 +11,11 @@ const userSchema = mongoose.Schema({
     },
     email: String,
     password: String,
-    cart: {
-        type: Array,
+    cart: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'products',
         default: []
-    },
+    }],
     isadmin: Boolean,
     orders: {
         type: Array,
