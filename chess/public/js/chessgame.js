@@ -99,11 +99,6 @@ socket.on("playerRole", function (role) {
     renderBoard();
 });
 
-socket.on("playerRole", function (role) {
-    playerRole = role;
-    renderBoard();
-});
-
 socket.on("boardState", function (fen) {
     chess.load(fen);
     renderBoard();

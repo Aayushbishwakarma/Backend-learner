@@ -7,6 +7,7 @@ const path = require("path");
 const app = express() ;
 const server = http.createServer(app);
 const io = socket(server);
+const PORT = process.env.PORT || 3000;
 
 
 const chess = new Chess();
@@ -55,7 +56,7 @@ io.on("connection", function(uniqueSocket){
 
             const result = chess.move(move);
             if(result){
-                currentPlayers = chess.turn();
+                currentPlayer = chess.turn();
                 io.emit("move", move);
                 io.emit("boardState", chess.fen())    
             }
@@ -73,6 +74,6 @@ io.on("connection", function(uniqueSocket){
 });
 
 
-server.listen(3000, function(){
-    console.log("Server is running on port 3000");
+server.listen(PORT, function(){
+    console.log(`Server is running on port ${PORT}`);
 });
