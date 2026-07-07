@@ -1,11 +1,14 @@
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
 const userModel = require('./models/user');
 const postModel = require('./models/post');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+
+mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/miniproject');
 
 app.set('view engine', 'ejs'); 
 app.use(express.json());
@@ -78,7 +81,7 @@ app.post('/register', async(req, res) => {
     let{email, username, name , password, age} = req.body ;
 
     let user = await userModel.findOne({email})
-    if(user) return res.status(500).send('User already exists');
+    if(user) return res.status(409).json({ message: 'User already exists' });
 
     bcrypt.genSalt(10, (err, salt) =>{
         bcrypt.hash(password, salt, async(err, hash) =>{
@@ -90,10 +93,7 @@ app.post('/register', async(req, res) => {
                 age
             });
 
-
-            let token = jwt.sign({email: email, userid: user._id}, "sshhh");
-            res.cookie('token', token);
-            res.send("registered");
+            res.status(201).json({ message: 'registered', redirect: '/login' });
         })
     })
 });
@@ -103,15 +103,15 @@ app.post('/login', async(req, res) => {
     let{email, password} = req.body ;
 
     let user = await userModel.findOne({email})
-    if(!user) return res.status(500).send('Something went wrong');
+    if(!user) return res.status(400).json({ message: 'Invalid email or password' });
 
     bcrypt.compare(password, user.password, function (err,result) {
         if(result) {
             let token = jwt.sign({email: email, userid: user._id}, "sshhh");
             res.cookie('token', token);
-            res.status(200).redirect('/profile');     
+            res.status(200).json({ message: 'logged in', redirect: '/profile' });     
         }
-        else res.redirect("/login");
+        else res.status(400).json({ message: 'Invalid email or password' });
     })
 });
 
@@ -130,4 +130,4 @@ function isLoggedIn(req, res, next) {
 
 
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
