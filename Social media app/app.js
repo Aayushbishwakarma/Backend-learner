@@ -8,7 +8,20 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/miniproject');
+const mongoUri = process.env.MONGO_URI;
+const jwtSecret = process.env.JWT_SECRET || 'sshhh';
+
+if (!mongoUri) {
+    console.error('MongoDB connection string is missing. Set MONGO_URI in Render to your MongoDB Atlas connection string.');
+    process.exit(1);
+}
+
+mongoose.connect(mongoUri)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch((error) => {
+        console.error('MongoDB connection failed:', error.message);
+        process.exit(1);
+    });
 
 app.set('view engine', 'ejs'); 
 app.use(express.json());
@@ -107,7 +120,7 @@ app.post('/login', async(req, res) => {
 
     bcrypt.compare(password, user.password, function (err,result) {
         if(result) {
-            let token = jwt.sign({email: email, userid: user._id}, "sshhh");
+            let token = jwt.sign({email: email, userid: user._id}, jwtSecret);
             res.cookie('token', token);
             res.status(200).json({ message: 'logged in', redirect: '/profile' });     
         }
@@ -119,7 +132,7 @@ app.post('/login', async(req, res) => {
 function isLoggedIn(req, res, next) {
    if(req.cookies.token === "") res.redirect("/login");
    else{
-    let data = jwt.verify(req.cookies.token, "sshhh");
+    let data = jwt.verify(req.cookies.token, jwtSecret);
     req.user = data;
    
    next();
