@@ -9,7 +9,9 @@ const authRouter = require('./routes/auth.routes');
 const accountRouter = require('./routes/account.routes'); 
 const transactionRouter = require('./routes/transaction.routes');
 
-
+app.get("/", (req, res) => {
+    res.send("Bank Application API is running")
+});
 
 app.use(express.json());
 app.use(cookieParser());
